@@ -50,7 +50,7 @@ def printError(message):
 def createLabelImage(annotation, encoding, outline=None):
     # the size of the image
     size = ( annotation.imgWidth , annotation.imgHeight )
-
+    print(name2label)
     # the background
     if encoding == "ids":
         background = name2label['background'].id
@@ -61,7 +61,7 @@ def createLabelImage(annotation, encoding, outline=None):
     else:
         print("Unknown encoding '{}'".format(encoding))
         return None
-
+    print(background)
     # this is the image that we want to create
     if encoding == "color":
         labelImg = Image.new("RGBA", size, background)
@@ -116,10 +116,10 @@ def createLabelImage(annotation, encoding, outline=None):
 #     - "ids"      : classes are encoded using the regular label IDs
 #     - "trainIds" : classes are encoded using the training IDs
 #     - "color"    : classes are encoded using the corresponding colors
-def json2labelImg(inJson,outImg,encoding="ids"):
+def json2labelImg(inJson,outImg,encoding="color"):
     annotation = Annotation()
     annotation.fromJsonFile(inJson)
-    labelImg = createLabelImage( annotation , encoding )
+    labelImg = createLabelImage( annotation , encoding)
     labelImg.save( outImg )
 
 # The main method, if you execute this script directly
