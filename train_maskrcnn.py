@@ -99,7 +99,6 @@ for epoch in range(num_epochs):
         losses.backward()
         optimizer.step()
         epoch_loss += losses.item()
-        print(losses)
     
     scheduler.step()
     epoch_loss /= len(data_loader)

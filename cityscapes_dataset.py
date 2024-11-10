@@ -80,7 +80,7 @@ class CityscapesMaskRCNN(Dataset):
         base_name = annotation_filename.split("_gt")[0]  # Get the part before "_gt"
         
         # Construct the expected image file name with `_leftImg8bit.png` suffix
-        image_filename = f"{base_name}.png"
+        image_filename = f"{base_name}_leftImg8bit.png"
         
         # Determine the image directory based on the annotation directory structure
         image_dir = annotation_dir.replace("gtFine", "leftImg8bit").replace("gtCoarse", "leftImg8bit")
