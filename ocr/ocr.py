@@ -12,12 +12,12 @@ img_color = cv2.imread(img_path)
 img = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
 img = cv2.resize(img, None, fx=2, fy=2)
 
-
 # Otsu Tresholding to find best threshold value
 _, binary_image = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
 
-
-# invert the image if the text is white and background is black
+##########################################################
+# Invert the image if the text is white and background is black
+##########################################################
 count_white = np.sum(binary_image > 0)
 count_black = np.sum(binary_image == 0)
 if count_black > count_white:
@@ -27,26 +27,21 @@ binary_image = cv2.GaussianBlur(binary_image, (3, 3), 0)
 kernel = np.ones((3, 3), np.uint8)
 binary_image = cv2.erode(binary_image, kernel, iterations=1)
 binary_image = cv2.dilate(binary_image, kernel, iterations=1)
+cv2.imwrite("bin_img.png", binary_image)
 
+##########################################################
 # Crop the word "STOP" from the stop sign
+##########################################################
+
 edges = cv2.Canny(binary_image, 50, 150)
 contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 height, width = binary_image.shape[:2]
 center = (width // 2, height // 2)
 
-
-# # take the first contour 
-# cnt = contours[0] 
-# rect = cv2.minAreaRect(cnt) 
-# box = cv2.boxPoints(rect) 
-# box = np.int0(box) 
-# x1, y1 = box[0]
-# x2, y2 = box[2]
-# cv2.rectangle(binary_image, (x1, y1), (x2, y2), (0, 255, 0), 2) 
-# cv2.imwrite("BoundingRectangle.png", binary_image) 
-
-image_with_boxes = binary_image.copy()
+##########################################################
 # Loop through each contour and draw a bounding box
+##########################################################
+image_with_boxes = binary_image.copy()
 for contour in contours:
     # rect = cv2.minAreaRect(contour) 
     # box = cv2.boxPoints(rect) 
@@ -57,10 +52,11 @@ for contour in contours:
 
     x, y, w, h = cv2.boundingRect(contour)
     cv2.rectangle(image_with_boxes, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Green color, thickness = 2
-
-# Display the image with bounding boxes
 cv2.imwrite("bbox.png", image_with_boxes)
 
+##########################################################
+#### Obtain set of 4 bbox to indicate the word "STOP" ####
+##########################################################
 # Filter contours by height similarity
 height_tolerance = 10  # Adjust this tolerance for what counts as "similar" height
 similar_height_contours = []
@@ -108,20 +104,22 @@ for row in rows:
         # Display the cropped image
         cv2.imwrite('cropped.png', cropped_image)
 
-cv2.imwrite("bin_img_stop.png", binary_image)
-
+##########################################################
+# Perform erosion to smooth the image
 kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
 eroded = cv2.erode(cropped_image, kernel, iterations=1)
 cv2.imwrite('eroded.png', eroded)
 
-
-thinned_image = cv2.ximgproc.thinning(255-cropped_image)
-cv2.imwrite('thinned.png', 255-thinned_image)
+# Thinning of image - not used
+# thinned_image = cv2.ximgproc.thinning(255-cropped_image)
+# cv2.imwrite('thinned.png', 255-thinned_image)
 
 
 print("Text detected:")
 print(pytesseract.image_to_string(eroded))
 
+##########################################################
+# Draw bbox on the text detection
 h, w, c = img_color.shape
 boxes = pytesseract.image_to_boxes(img_color) 
 for b in boxes.splitlines():
