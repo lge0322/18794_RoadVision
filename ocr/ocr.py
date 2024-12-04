@@ -5,8 +5,13 @@ import numpy as np
 
 # Referenced from: https://github.com/h/pytesseract
 
+# TODO:
+# tilt_stop.png (side way stop)
+# road_sign.png (speed 70)
+# stop2.jpg (stop sign)
+
 # img_path = "sign_dataset/train/4.jpg"
-img_path = "stop.png"
+img_path = "raw_imgs/stop2.jpg"
 # img_path = "road_sign_4.png"
 img_color = cv2.imread(img_path)
 img = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
@@ -27,7 +32,7 @@ binary_image = cv2.GaussianBlur(binary_image, (3, 3), 0)
 kernel = np.ones((3, 3), np.uint8)
 binary_image = cv2.erode(binary_image, kernel, iterations=1)
 binary_image = cv2.dilate(binary_image, kernel, iterations=1)
-cv2.imwrite("bin_img.png", binary_image)
+cv2.imwrite("processed_imgs/bin_img.png", binary_image)
 
 ##########################################################
 # Crop the word "STOP" from the stop sign
@@ -41,18 +46,51 @@ center = (width // 2, height // 2)
 ##########################################################
 # Loop through each contour and draw a bounding box
 ##########################################################
-image_with_boxes = binary_image.copy()
-for contour in contours:
-    # rect = cv2.minAreaRect(contour) 
-    # box = cv2.boxPoints(rect) 
-    # box = np.int0(box) 
-    # x1, y1 = box[0]
-    # x2, y2 = box[2]
-    # cv2.rectangle(image_with_boxes, (x1, y1), (x2, y2), (0, 255, 0), 2) 
+image_with_boxes = img.copy()
+breakpoint()
 
-    x, y, w, h = cv2.boundingRect(contour)
-    cv2.rectangle(image_with_boxes, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Green color, thickness = 2
-cv2.imwrite("bbox.png", image_with_boxes)
+# for contour in contours:
+#     # rect = cv2.minAreaRect(contour) 
+#     # box = cv2.boxPoints(rect) 
+#     # box = np.int0(box) 
+#     # x1, y1 = box[0]
+#     # x2, y2 = box[2]
+#     # cv2.rectangle(image_with_boxes, (x1, y1), (x2, y2), (0, 255, 0), 2) 
+#     rect = cv2.minAreaRect(contour)
+
+#     # Get the box points of the rectangle
+#     box = cv2.boxPoints(rect)
+#     box = np.int0(box)  # Convert to integer coordinates
+
+#     # Draw the rectangle
+#     cv2.drawContours(image_with_boxes, [box], 0, (0, 255, 0), 2)  # Green rectangle
+
+    # x, y, w, h = cv2.boundingRect(contour)
+    # cv2.rectangle(image_with_boxes, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Green color, thickness = 2
+
+# cv2.drawContours(image_with_boxes, contours, -1, (0, 255, 0), 2)
+# cv2.imwrite("processed_imgs/bbox.png", image_with_boxes)
+
+##########################################################
+#### Extract polygon from image ####
+##########################################################
+
+largest_contour = max(contours, key=cv2.contourArea)
+contour_mask = np.zeros_like(img, dtype=np.uint8)
+cv2.drawContours(contour_mask, [largest_contour], -1, (255, 255, 255), thickness=cv2.FILLED)
+extracted_contour_region = cv2.bitwise_and(img, contour_mask)
+cv2.imwrite("processed_imgs/polygon_mask.png", extracted_contour_region)
+breakpoint()
+
+kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+cleaned = cv2.morphologyEx(extracted_contour_region, cv2.MORPH_CLOSE, kernel)
+cleaned = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, kernel)
+
+low_threshold = 50
+high_threshold = 150
+edges = cv2.Canny(cleaned, low_threshold, high_threshold)
+cv2.imwrite("processed_imgs/edges.png", edges)
+
 
 ##########################################################
 #### Obtain set of 4 bbox to indicate the word "STOP" ####
@@ -102,17 +140,21 @@ for row in rows:
         cropped_image = binary_image[y_min:y_max, x_min:x_max]
 
         # Display the cropped image
-        cv2.imwrite('cropped.png', cropped_image)
+        cv2.imwrite('processed_imgs/cropped.png', cropped_image)
+
 
 ##########################################################
 # Perform erosion to smooth the image
-kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-eroded = cv2.erode(cropped_image, kernel, iterations=1)
-cv2.imwrite('eroded.png', eroded)
+try:
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    eroded = cv2.erode(cropped_image, kernel, iterations=1)
+    cv2.imwrite('processed_imgs/eroded.png', eroded)
+except:
+    raise Exception("No crop performed!")
 
 # Thinning of image - not used
 # thinned_image = cv2.ximgproc.thinning(255-cropped_image)
-# cv2.imwrite('thinned.png', 255-thinned_image)
+# cv2.imwrite('processed_imgs/thinned.png', 255-thinned_image)
 
 
 print("Text detected:")
@@ -126,4 +168,4 @@ for b in boxes.splitlines():
     b = b.split(' ')
     img_color = cv2.rectangle(img_color, (int(b[1]), h - int(b[2])), (int(b[3]), h - int(b[4])), (0, 255, 0), 2)
 
-cv2.imwrite('output.png', img_color)
+cv2.imwrite('processed_imgs/output.png', img_color)
