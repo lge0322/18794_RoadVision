@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch import nn
 from torch.nn import Conv2d
 
+# Reference: https://github.com/facebookresearch/maskrcnn-benchmark/blob/main/configs/cityscapes/README.md
 def clip_weights_from_pretrain_of_cityscapes(f, out_file):
     """
     Adjusts pre-trained weights for Cityscapes dataset focusing on 'background' and 'traffic sign' labels.
