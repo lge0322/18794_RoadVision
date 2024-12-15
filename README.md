@@ -9,14 +9,17 @@ Data processing code can be found in `data_processing`
 ## DeepLabV3
 ### Training
 Training can be run using the following command:
+
 `python main.py --model=deeplabv3_resnet50 --dataset=coco --batch_size=8 --total_itrs=3000`
 
 The `--dataset` flag can be used to specify which dataset to train on: Russian dataset (`russian`), COCO-2017 stop sign (`coco`) or the combination of both (`both`).
 
 ### Evaluation
-Evaluation can be run using the following command, using `--save_val_results` will generate the visualizations of the model's predicted output.
+Evaluation can be run using the following command:
 
 `python main.py --test_only --save_val_results --model=deeplabv3_resnet50 --dataset=coco --ckpt=/content/drive/MyDrive/794_project/'Colab Notebooks'/checkpoints/latest_deeplabv3_resnet50_VOC_os16_lr0.pth`
+
+The `--save_val_results` flag will generate the visualizations of the model's predicted output.
 
 ### Visualization
 `Running_DeepLab.ipynb` provides a pipeline for running the DeepLabV3 visuzalition. The demo also includes the OCR pipeline performed on the output segmentation mask.
