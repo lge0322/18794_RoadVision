@@ -17,13 +17,11 @@ def get_cityscapes_data(file_path, img_dir):
     with open(file_path, 'r') as f:
         annotation = json.load(f)
         
-    # Initialize lists to store data
     boxes = []
     labels = []
     masks = []
     image_id = torch.tensor([0])  # For simplicity, use a constant ID for each image
     
-    # For each object in the annotation
     for obj in annotation["objects"]:
         if obj["label"] == "traffic sign":
             label = 1  # Label for road signs (background will be 0)
@@ -53,7 +51,6 @@ def get_cityscapes_data(file_path, img_dir):
     labels = np.array(labels)
     masks = np.array(masks)
     
-    # Convert to tensor
     boxes = torch.tensor(boxes)
     labels = torch.tensor(labels)
     masks = torch.tensor(masks)
@@ -75,23 +72,16 @@ class CityscapesMaskRCNN(Dataset):
     
     def __getitem__(self, idx):
         annotation_file = self.annotation_files[idx]
-        
-        # Extract the directory, base name, and create the corresponding image file name
         annotation_dir, annotation_filename = os.path.split(annotation_file)
         base_name = annotation_filename.split("_gt")[0]  # Get the part before "_gt"
-        
-        # Construct the expected image file name with `_leftImg8bit.png` suffix
         image_filename = f"{base_name}_leftImg8bit.png"
         
-        # Determine the image directory based on the annotation directory structure
         image_dir = annotation_dir.replace("gtFine", "leftImg8bit").replace("gtCoarse", "leftImg8bit")
         image_path = os.path.join(image_dir, image_filename)
         
-        # Load image and annotations
         image = Image.open(image_path).convert("RGB")
         boxes, labels, masks, image_id = get_cityscapes_data(annotation_file, self.img_dir)
         
-        # Build the target dictionary
         target = {
             "boxes": boxes,
             "labels": labels,
@@ -117,5 +107,4 @@ def get_all_annotation_files(base_dir):
     files_fine = glob.glob(search_fine, recursive=True)
     files_coarse = glob.glob(search_coarse, recursive=True)
     
-    # Concatenate fine and coarse
     return files_fine + files_coarse
