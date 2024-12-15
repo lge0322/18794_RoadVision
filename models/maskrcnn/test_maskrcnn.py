@@ -4,18 +4,14 @@ from torchvision import models
 from PIL import Image
 from cityscapes_dataset import get_cityscapes_data
 
-# Load pre-trained model
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model = models.detection.maskrcnn_resnet50_fpn(pretrained=False)
 model.load_state_dict(torch.load("mask_rcnn_cityscapes.pth"))
 model.to(device)
 model.eval()
 
-# Load an image for inference
 image_path = "/path/to/test/image.png"
 image = Image.open(image_path).convert("RGB")
-
-# Prepare the image and target (using a test annotation file)
 annotation_file = "/path/to/test/annotation.json"
 boxes, labels, masks, image_id = get_cityscapes_data(annotation_file, "/path/to/images")
 
