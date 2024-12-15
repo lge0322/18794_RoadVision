@@ -7,6 +7,7 @@ import numpy as np
 from torch.utils.data import Dataset
 from PIL import Image
 
+# Reference: https://github.com/mcordts/cityscapesScripts
 def get_cityscapes_data(file_path, img_dir):
     """
     Load and process the Cityscapes JSON annotations and corresponding images.
