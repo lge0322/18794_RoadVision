@@ -11,16 +11,15 @@ from sklearn.metrics import accuracy_score
 from scipy.spatial import ConvexHull
 import numpy as np
 
-# Define the base directory
 dataset_base_dir = "dataset"
 annotation_files = get_all_annotation_files(dataset_base_dir)
 image_dir = os.path.join(dataset_base_dir, "leftImg8bit", "train")
 
-# Initialize dataset and data loader
+# Initialize data
 dataset = CityscapesMaskRCNN(annotation_files, image_dir)
 data_loader = DataLoader(dataset, batch_size=2, shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
 
-# Load the pre-trained Mask R-CNN model
+# Load the Mask R-CNN model
 model = models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 in_features = model.roi_heads.box_predictor.cls_score.in_features
 model.roi_heads.box_predictor = models.detection.faster_rcnn.FastRCNNPredictor(in_features, 2)
