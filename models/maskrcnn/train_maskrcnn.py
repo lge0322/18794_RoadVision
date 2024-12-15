@@ -15,11 +15,9 @@ dataset_base_dir = "dataset"
 annotation_files = get_all_annotation_files(dataset_base_dir)
 image_dir = os.path.join(dataset_base_dir, "leftImg8bit", "train")
 
-# Initialize data
 dataset = CityscapesMaskRCNN(annotation_files, image_dir)
 data_loader = DataLoader(dataset, batch_size=2, shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
 
-# Load the Mask R-CNN model
 model = models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 in_features = model.roi_heads.box_predictor.cls_score.in_features
 model.roi_heads.box_predictor = models.detection.faster_rcnn.FastRCNNPredictor(in_features, 2)
@@ -29,23 +27,19 @@ model.roi_heads.mask_predictor = models.detection.mask_rcnn.MaskRCNNPredictor(
     2
 )
 
-# Move model to device
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model.to(device)
 
-# Set up optimizer
 params = [p for p in model.parameters() if p.requires_grad]
 optimizer = optim.SGD(params, lr=0.001, momentum=0.9, weight_decay=0.0001)
 criterion = nn.CrossEntropyLoss()
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1000, 0.1)
 
-# Training and validation metrics
 num_epochs = 10
 losses_list = []
 accuracies_list = []
 miou_list = []
 
-# Helper function to calculate IoU
 def calculate_iou(mask1, mask2):
     intersection = (mask1 & mask2).float().sum((1, 2))
     union = (mask1 | mask2).float().sum((1, 2))
